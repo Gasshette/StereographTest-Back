@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\Stereograph.TechnicalTest.Api.props" />
+</Project>
