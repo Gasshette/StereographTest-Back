@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-
 using Stereograph.TechnicalTest.Api.Models;
 using System;
 
@@ -22,7 +21,7 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddDbContext<ApplicationDbContext>(options =>
+        services.AddDbContext<TesttechniqueContext>(options =>
         {
             options
                 .UseSqlite("Data Source=testtechnique.db")
@@ -54,12 +53,12 @@ public class Startup
         application
             .UseHttpsRedirection()
             .UseRouting()
-            .UseCors()
+            .UseCors(opts => opts.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin())
             .UseEndpoints(endpoints => endpoints.MapControllers());
 
         using IServiceScope scope = application.ApplicationServices.CreateScope();
         IServiceProvider services = scope.ServiceProvider;
-        ApplicationDbContext appDbContext = services.GetRequiredService<ApplicationDbContext>();
+        TesttechniqueContext appDbContext = services.GetRequiredService<TesttechniqueContext>();
         appDbContext.Database.Migrate();
     }
 }
