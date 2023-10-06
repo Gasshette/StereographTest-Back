@@ -1,3 +1,4 @@
+using CsvHelper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -5,8 +6,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Stereograph.TechnicalTest.Api.Entities;
 using Stereograph.TechnicalTest.Api.Models;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 
 namespace Stereograph.TechnicalTest.Api;
 
@@ -40,6 +45,32 @@ public class Startup
             .AddControllers();
     }
 
+    private List<Project> ReadCsv()
+    {
+        using (var reader = new StreamReader("Ressources\\projects.csv"))
+        using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+        {
+            var records = new List<Project>();
+            csv.Read();
+            csv.ReadHeader();
+            while (csv.Read())
+            {
+                var record = new Project
+                {
+                    Id = csv.GetField<int>("projects/id"),
+                    Name = csv.GetField<string>("projects/nom"),
+                    Description = csv.GetField<string>("projects/description"),
+                    Comment = csv.GetField<string>("projects/commentaire"),
+                    Step = csv.GetField<string>("projects/etape"),
+                };
+
+                records.Add(record);
+            }
+
+            return records;
+        }
+    }
+
     public void Configure(IApplicationBuilder application, IWebHostEnvironment environment)
     {
         if (environment.IsDevelopment())
@@ -60,5 +91,15 @@ public class Startup
         IServiceProvider services = scope.ServiceProvider;
         TesttechniqueContext appDbContext = services.GetRequiredService<TesttechniqueContext>();
         appDbContext.Database.Migrate();
+
+        try
+        {
+            appDbContext.AddRange(ReadCsv());
+            appDbContext.SaveChanges();
+        }
+        catch (Exception e)
+        {
+            // empty catch to avoid crash when adding csv data with specific id
+        }
     }
 }
