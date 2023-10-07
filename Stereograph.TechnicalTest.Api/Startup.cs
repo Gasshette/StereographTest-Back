@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 
 namespace Stereograph.TechnicalTest.Api;
 
@@ -94,6 +95,11 @@ public class Startup
 
         try
         {
+            // Clear db
+            List<Project> projects = appDbContext.Projects.ToList();
+            appDbContext.RemoveRange(projects);
+
+            // Add original content from CSV
             appDbContext.AddRange(ReadCsv());
             appDbContext.SaveChanges();
         }
